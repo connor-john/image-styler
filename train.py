@@ -1,6 +1,9 @@
 # Imports
 import os
 import torch
+from torch.optim import Adam
+from data import get_data
+from models import Model
 
 # Hyper params
 batch_size = 32
@@ -16,6 +19,8 @@ train_style_dir = './data/train/style/'
 test_content_dir = './data/test/content/'
 test_style_dir = './data/test/style/'
 
+loadmodel = None
+
 # create directories
 if not os.path.exists('./save'):
     os.mkdir('./save/')
@@ -29,6 +34,12 @@ if not os.path.exists(loss_dir):
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # prepare dataset and dataLoader
-train_loader, iters = get_data(train_content_dir, train_style_dir)
-train_loader, _ = get_data(test_content_dir, test_style_dir)
+train_loader, iters = get_data(train_content_dir, train_style_dir, batch_size, True)
+test_loader, _ = get_data(test_content_dir, test_style_dir, batch_size, False)
 test_iter = iter(test_loader)
+
+# model
+model = Model.to(device)
+if loadmodel is not None:
+    model.load_state_dict(torch.load(loadmodel))
+optimizer = Adam(model.parameters(), lr=lr)

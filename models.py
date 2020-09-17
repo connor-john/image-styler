@@ -3,6 +3,18 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.models import vgg19
 
+def calc_mean_std(features):
+    batch_size, c = features.size()[:2]
+    features_mean = features.reshape(batch_size, c, -1).mean(dim=2).reshape(batch_size, c, 1, 1)
+    features_std = features.reshape(batch_size, c, -1).std(dim=2).reshape(batch_size, c, 1, 1) + 1e-6
+    return features_mean, features_std
+
+def adain(content_features, style_features):
+    content_mean, content_std = calc_mean_std(content_features)
+    style_mean, style_std = calc_mean_std(style_features)
+    normalized_features = style_std * (content_features - content_mean) / content_std + style_mean
+    return normalized_features
+
 # Layer for Decoder
 class RC(nn.Module):
     """A wrapper of ReflectionPad2d and Conv2d"""
@@ -77,3 +89,43 @@ class Model(nn.Module):
         super().__init__()
         self.encoder = Encoder()
         self.decoder = Decoder()
+
+    @staticmethod
+    def calc_content_loss(out_features, t):
+        return F.mse_loss(out_features, t)
+  
+    @staticmethod
+    def calc_style_loss(content_mid, style_mid):
+        loss = 0
+        for c, s in zip(content_mid, style_mid):
+            c_mean, c_std = calc_mean_std(c)
+            s_mean, s_std = calc_mean_std(s)
+            loss += F.mse_loss(c_mean, s_mean) + F.mse_loss(c_std, s_std)
+    
+        return loss
+
+    def generate(self, content, style, alpha = 1.0):
+        content_features = self.encoder(content, out_last = True)
+        style_features = self.encoder(style, out_last = True)
+        # AdaIN function
+        t = adain(content_features, style_features)
+        # Alpha change (higher alpha, more like style)
+        t = alpha * t + (1 - alpha) * content_features
+        out = self.decoder(t)
+        return out
+  
+    def forward(self, content, style, alpha = 1.0, la = 10):
+        content_features = self.encoder(content, out_last = True)
+        style_features = self.encoder(style, out_last = True)
+        t = adain(content_features, style_features)
+        t = alpha * t + (1 - alpha) * content_features
+        out = self.decoder(t)
+
+        out_features = self.encoder(out, out_last = True)
+        out_middle_features = self.encoder(out, out_last = False)
+        style_middle_features = self.encoder(style, out_last = False)
+
+        loss_c = self.calc_content_loss(out_features, t)
+        loss_s = self.calc_style_loss(out_middle_features, style_middle_features)
+        loss = loss_c + la *loss_s
+        return loss
