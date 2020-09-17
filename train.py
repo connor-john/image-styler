@@ -17,7 +17,7 @@ lr = 1e-8
 ss_interval = 50
 
 loss_dir = './loss'
-model_state_dir = './save/model_state'
+model_state_dir = './models/model_state'
 image_dir = './save/image'
 train_content_dir = './data/train/content/'
 train_style_dir = './data/train/style/'
