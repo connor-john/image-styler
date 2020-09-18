@@ -77,7 +77,7 @@ class Encoder(nn.Module):
         h1 = self.slice1(images)
         h2 = self.slice2(h1)
         h3 = self.slice3(h2)
-        h4 = self.slic4(h3)
+        h4 = self.slice4(h3)
         if out_last:
             return h4
         else:
