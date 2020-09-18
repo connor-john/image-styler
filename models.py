@@ -87,7 +87,7 @@ class Encoder(nn.Module):
 class Model(nn.Module):
     def __init__(self):
         super().__init__()
-        self.encoder = Encoder()
+        self.vgg_encoder  = Encoder()
         self.decoder = Decoder()
 
     @staticmethod
