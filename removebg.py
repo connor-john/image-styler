@@ -18,7 +18,7 @@ def main():
     args = parser.parse_args()
 
     # read image
-    fn = args.content
+    fn = args.image
     img = cv2.imread(fn)
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
