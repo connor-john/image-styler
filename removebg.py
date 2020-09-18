@@ -29,7 +29,7 @@ def main():
 
     #-- Find contours in edges, sort by area ---------------------------------------------
     contour_info = []
-    _, contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
     # Previously, for a previous version of cv2, this line was: 
     #  contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
     # Thanks to notes from commenters, I've updated the code but left this note
