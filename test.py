@@ -4,7 +4,7 @@ from PIL import Image
 import torch
 from torchvision import transforms
 from torchvision.utils import save_image
-from model import Model
+from models import Model
 from data import denorm
 
 
