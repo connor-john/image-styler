@@ -105,8 +105,8 @@ class Model(nn.Module):
         return loss
 
     def generate(self, content, style, alpha = 1.0):
-        content_features = self.encoder(content, out_last = True)
-        style_features = self.encoder(style, out_last = True)
+        content_features = self.vgg_encoder(content, out_last = True)
+        style_features = self.vgg_encoder(style, out_last = True)
         # AdaIN function
         t = adain(content_features, style_features)
         # Alpha change (higher alpha, more like style)
@@ -115,15 +115,15 @@ class Model(nn.Module):
         return out
   
     def forward(self, content, style, alpha = 1.0, la = 10):
-        content_features = self.encoder(content, out_last = True)
-        style_features = self.encoder(style, out_last = True)
+        content_features = self.vgg_encoder(content, out_last = True)
+        style_features = self.vgg_encoder(style, out_last = True)
         t = adain(content_features, style_features)
         t = alpha * t + (1 - alpha) * content_features
         out = self.decoder(t)
 
-        out_features = self.encoder(out, out_last = True)
-        out_middle_features = self.encoder(out, out_last = False)
-        style_middle_features = self.encoder(style, out_last = False)
+        out_features = self.vgg_encoder(out, out_last = True)
+        out_middle_features = self.vgg_encoder(out, out_last = False)
+        style_middle_features = self.vgg_encoder(style, out_last = False)
 
         loss_c = self.calc_content_loss(out_features, t)
         loss_s = self.calc_style_loss(out_middle_features, style_middle_features)
